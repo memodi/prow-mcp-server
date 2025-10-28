@@ -8,6 +8,7 @@ from .tools.job_tools import register_job_tools
 from .tools.log_tools import register_log_tools
 from .tools.pr_tools import register_pr_tools
 from .tools.diagnostic_tools import register_diagnostic_tools
+from .tools.periodic_tools import register_periodic_tools
 
 
 def create_server() -> FastMCP:
@@ -23,6 +24,7 @@ def create_server() -> FastMCP:
     register_log_tools(mcp)
     register_pr_tools(mcp)
     register_diagnostic_tools(mcp)
+    register_periodic_tools(mcp)
     
     return mcp
 

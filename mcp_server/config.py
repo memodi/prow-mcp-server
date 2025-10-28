@@ -6,6 +6,7 @@ import sys
 # Prow and GCS URLs
 PROW_URL = "https://prow.ci.openshift.org"
 GCS_URL = "https://gcsweb-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/test-platform-results"
+QE_GCS_URL = "https://gcsweb-qe-private-deck-ci.apps.ci.l2s4.p1.openshiftapps.com/gcs/qe-private-deck"
 
 # HTTP client configuration
 DEFAULT_TIMEOUT = 30.0
