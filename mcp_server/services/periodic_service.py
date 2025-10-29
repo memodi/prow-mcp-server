@@ -11,7 +11,6 @@ from dataclasses import dataclass
 class PeriodicJobConfig:
     """Configuration for a periodic job team."""
     team_name: str
-    is_qe: bool
     jobs: List[str]
 
 
@@ -54,7 +53,6 @@ class PeriodicService:
 
             config = PeriodicJobConfig(
                 team_name=team_name,
-                is_qe=data.get("QE", False),
                 jobs=data.get("periodic_jobs", [])
             )
 
@@ -127,23 +125,6 @@ class PeriodicService:
         return None
 
     @staticmethod
-    def is_qe_job(job_name: str) -> bool:
-        """Check if a job is a QE job.
-
-        Args:
-            job_name: The periodic job name
-
-        Returns:
-            True if the job is a QE job, False otherwise
-        """
-        team_name = PeriodicService.get_team_for_job(job_name)
-        if not team_name:
-            return False
-
-        config = PeriodicService.load_team_config(team_name)
-        return config.is_qe if config else False
-
-    @staticmethod
     def get_jobs_for_team(team_name: str) -> List[str]:
         """Get all jobs for a specific team.
 
@@ -165,17 +146,3 @@ class PeriodicService:
         """
         configs = PeriodicService.load_all_configs()
         return list(configs.keys())
-
-    @staticmethod
-    def get_gcs_bucket(job_name: str) -> str:
-        """Get the appropriate GCS bucket for a job.
-
-        Args:
-            job_name: The periodic job name
-
-        Returns:
-            GCS bucket name ('qe-private-deck' for QE jobs, 'test-platform-results' otherwise)
-        """
-        if PeriodicService.is_qe_job(job_name):
-            return "qe-private-deck"
-        return "test-platform-results"

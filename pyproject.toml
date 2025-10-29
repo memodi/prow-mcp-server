@@ -17,6 +17,7 @@ dependencies = [
     "python-dateutil>=2.9.0.post0",
     "fastapi>=0.104.0",
     "uvicorn>=0.24.0",
+    "rapidfuzz>=3.14.3",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -64,11 +64,14 @@ async def smart_pr_build_finder(
                     "success": True,
                     "build_id": build_id,
                     "job_id": best_match["metadata"]["name"],
+                    "job_name": job_name,
                     "job_status": best_match.get("status", {}).get("state"),
                     "source": "active_prow",
                     "confidence": job_confidence_pairs[0]["confidence"],
                     "match_method": job_confidence_pairs[0]["match_method"],
-                    "total_matches": len(job_confidence_pairs)
+                    "total_matches": len(job_confidence_pairs),
+                    "pr_number": pr_number,
+                    "org_repo": org_repo
                 }
     except Exception as e:
         strategies_attempted.append(f"active_prow_jobs_failed: {str(e)}")
@@ -83,10 +86,13 @@ async def smart_pr_build_finder(
             return {
                 "success": True,
                 "build_id": latest_build,
+                "job_name": job_name,
                 "source": "gcs_pr_logs",
                 "confidence": "high",
                 "total_builds": len(builds),
-                "all_builds": builds
+                "all_builds": builds,
+                "pr_number": pr_number,
+                "org_repo": org_repo
             }
     except Exception as e:
         strategies_attempted.append(f"gcs_pr_logs_failed: {str(e)}")
@@ -103,10 +109,13 @@ async def smart_pr_build_finder(
                 return {
                     "success": True,
                     "build_id": latest_build,
+                    "job_name": job_name,
                     "source": "gcs_metadata_scan",
                     "confidence": "high",
                     "total_builds": len(pr_builds),
-                    "all_builds": pr_builds
+                    "all_builds": pr_builds,
+                    "pr_number": pr_number,
+                    "org_repo": org_repo
                 }
     except Exception as e:
         strategies_attempted.append(f"gcs_metadata_scan_failed: {str(e)}")
@@ -129,10 +138,13 @@ async def smart_pr_build_finder(
                 return {
                     "success": True,
                     "build_id": recent_builds[0],
+                    "job_name": job_name,
                     "source": "pattern_search",
                     "confidence": "low",
                     "note": "This is a speculative match based on recent builds",
-                    "warning": "This build may not actually be for the requested PR"
+                    "warning": "This build may not actually be for the requested PR",
+                    "pr_number": pr_number,
+                    "org_repo": org_repo
                 }
     except Exception as e:
         strategies_attempted.append(f"pattern_search_failed: {str(e)}")
@@ -142,6 +154,9 @@ async def smart_pr_build_finder(
         "success": False,
         "error": "All search strategies failed",
         "strategies_attempted": strategies_attempted,
+        "pr_number": pr_number,
+        "org_repo": org_repo,
+        "job_name": job_name,
         "suggestions": [
             f"Verify PR {pr_number} exists and has CI runs",
             "Check if the job name is correct",

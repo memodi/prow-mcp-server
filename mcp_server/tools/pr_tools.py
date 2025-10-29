@@ -21,20 +21,40 @@ def register_pr_tools(mcp: FastMCP) -> None:
     ) -> str:
         """
         Find the PR number and details associated with a specific Prow job.
-        
+
         Args:
             job_id: The Prow job ID to look up
-            org_repo: Organization and repository (e.g., 'redhat-developer_rhdh'). Uses default if not provided.
-            job_name: Job name pattern. Uses default if not provided.
-            
+            org_repo: Organization and repository in format 'org_repo' (e.g., 'redhat-developer_rhdh').
+                     Falls back to DEFAULT_ORG_REPO env var if not provided.
+                     AGENT INFERENCE: Extract from Prow job URLs like 'https://prow.ci.openshift.org/view/gs/.../pr-logs/pull/{org}_{repo}/...'
+                     or from user context mentioning specific repositories.
+            job_name: Job name pattern (e.g., 'pull-ci-redhat-developer-rhdh-main-e2e-tests').
+                     Falls back to DEFAULT_JOB_NAME env var if not provided.
+                     AGENT INFERENCE: Extract from Prow URLs, user's previous messages mentioning specific jobs,
+                     or infer from repository context (e.g., if user mentions "e2e tests" look for matching job names).
+
         Returns:
             JSON string with PR details including number, title, author, and links
+
+        Example Usage:
+            - User: "What PR is job 1234567890 for?" -> Use job_id="1234567890", rely on defaults
+            - User: "Find PR for job 1234567890 in openshift_installer" -> org_repo="openshift_installer"
         """
         # Use defaults if not provided
         if org_repo is None:
             org_repo = get_default_org_repo()
+            if org_repo is None:
+                return json.dumps({
+                    "success": False,
+                    "error": "org_repo is required. Either provide it as a parameter or set DEFAULT_ORG_REPO environment variable."
+                })
         if job_name is None:
             job_name = get_default_job_name()
+            if job_name is None:
+                return json.dumps({
+                    "success": False,
+                    "error": "job_name is required. Either provide it as a parameter or set DEFAULT_JOB_NAME environment variable."
+                })
             
         try:
             # For now, return a placeholder result since we don't have the actual implementation
@@ -65,20 +85,41 @@ def register_pr_tools(mcp: FastMCP) -> None:
     ) -> str:
         """
         Find the latest Prow build ID for a specific GitHub PR number.
-        
+
         Args:
             pr_number: The GitHub PR number (e.g., "3191")
-            org_repo: Organization and repository (e.g., 'redhat-developer_rhdh'). Uses default if not provided.
-            job_name: Job name pattern. Uses default if not provided.
-            
+            org_repo: Organization and repository in format 'org_repo' (e.g., 'redhat-developer_rhdh').
+                     Falls back to DEFAULT_ORG_REPO env var if not provided.
+                     AGENT INFERENCE: Extract from GitHub PR URLs like 'https://github.com/{org}/{repo}/pull/{number}'
+                     or from user context mentioning "in the X/Y repository" or "for the Z project".
+            job_name: Job name pattern (e.g., 'pull-ci-redhat-developer-rhdh-main-e2e-tests').
+                     Falls back to DEFAULT_JOB_NAME env var if not provided.
+                     AGENT INFERENCE: Look for job names in user's question, infer from test type mentioned
+                     (e.g., "e2e tests" might map to jobs with "e2e" in the name), or extract from Prow URLs.
+
         Returns:
             JSON string with build information including build_id, job_name, pr_number, etc.
+
+        Example Usage:
+            - User: "Get latest build for PR 3191" -> pr_number="3191", rely on defaults
+            - User: "Show me builds for https://github.com/openshift/installer/pull/123" -> pr_number="123", org_repo="openshift_installer"
+            - User: "Latest build for PR 456 in cluster-api-provider" -> pr_number="456", infer org_repo from context
         """
         # Use defaults if not provided
         if org_repo is None:
             org_repo = get_default_org_repo()
+            if org_repo is None:
+                return json.dumps({
+                    "success": False,
+                    "error": "org_repo is required. Either provide it as a parameter or set DEFAULT_ORG_REPO environment variable."
+                })
         if job_name is None:
             job_name = get_default_job_name()
+            if job_name is None:
+                return json.dumps({
+                    "success": False,
+                    "error": "job_name is required. Either provide it as a parameter or set DEFAULT_JOB_NAME environment variable."
+                })
             
         try:
             # Run the async function using asyncio
@@ -103,21 +144,43 @@ def register_pr_tools(mcp: FastMCP) -> None:
     ) -> str:
         """
         Get recent job status for a specific PR across multiple runs.
-        
+
         Args:
             pr_number: The PR number to check
-            org_repo: Organization and repository (e.g., 'redhat-developer_rhdh'). Uses default if not provided.
-            job_name: Job name pattern. Uses default if not provided.
+            org_repo: Organization and repository in format 'org_repo' (e.g., 'redhat-developer_rhdh').
+                     Falls back to DEFAULT_ORG_REPO env var if not provided.
+                     AGENT INFERENCE: Parse from GitHub URLs, extract from phrases like "in the {org}/{repo} repo",
+                     or maintain context from earlier conversation about specific repositories.
+            job_name: Job name pattern (e.g., 'pull-ci-redhat-developer-rhdh-main-e2e-tests').
+                     Falls back to DEFAULT_JOB_NAME env var if not provided.
+                     AGENT INFERENCE: Extract from Prow job URLs, user's previous messages, or infer from
+                     test type keywords (e.g., "unit tests", "integration tests", "e2e").
             limit: Maximum number of recent jobs to return (default: 10)
-            
+                     AGENT INFERENCE: If user says "last 5 jobs" use limit=5, "recent" use default 10
+
         Returns:
             JSON string with recent job statuses and trends
+
+        Example Usage:
+            - User: "Show me recent jobs for PR 100" -> pr_number=100, use defaults
+            - User: "What's the status of the last 5 e2e runs for PR 200?" -> pr_number=200, limit=5, infer job_name with "e2e"
+            - User: "Check PR 300 in openshift/console" -> pr_number=300, org_repo="openshift_console"
         """
         # Use defaults if not provided
         if org_repo is None:
             org_repo = get_default_org_repo()
+            if org_repo is None:
+                return json.dumps({
+                    "success": False,
+                    "error": "org_repo is required. Either provide it as a parameter or set DEFAULT_ORG_REPO environment variable."
+                })
         if job_name is None:
             job_name = get_default_job_name()
+            if job_name is None:
+                return json.dumps({
+                    "success": False,
+                    "error": "job_name is required. Either provide it as a parameter or set DEFAULT_JOB_NAME environment variable."
+                })
             
         try:
             # This is a placeholder for actual implementation

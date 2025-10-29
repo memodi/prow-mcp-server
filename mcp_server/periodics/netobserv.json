@@ -1,5 +1,4 @@
 {
-    "QE": true,
     "periodic_jobs": [
         "periodic-ci-openshift-openshift-tests-private-release-4.12-amd64-nightly-aws-ipi-f60-netobserv",
         "periodic-ci-openshift-openshift-tests-private-release-4.13-multi-nightly-aws-ipi-amd-f999-netobserv",

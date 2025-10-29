@@ -29,7 +29,9 @@ async def make_request(
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
             if method.upper() == "GET":
-                response = await client.request(method, url, headers=headers, params=data)
+                response = await client.request(
+                    method, url, headers=headers, params=data
+                )
             else:
                 response = await client.request(method, url, headers=headers, json=data)
             response.raise_for_status()
@@ -66,4 +68,4 @@ async def make_request_text(
                 return response.text
             return None
     except Exception:
-        return None 
+        return None

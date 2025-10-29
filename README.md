@@ -169,20 +169,33 @@ podman run -p 8000:8000 --rm prow-mcp-sse:latest
 
 ## Configuration
 
-**Required environment variables** (configured in `mcp.json`):
-
-- `DEFAULT_ORG_REPO`: Organization and repository (e.g., `redhat-developer_rhdh`)
-- `DEFAULT_JOB_NAME`: Default Prow job name (e.g., `pull-ci-redhat-developer-rhdh-main-e2e-tests`)
-
 **Optional environment variables** (can be configured in `mcp.json` or shell):
 
-- `API_KEY`: For authenticated requests
+- `DEFAULT_ORG_REPO`: Organization and repository (e.g., `redhat-developer_rhdh`). Used as default when not specified in tool calls. Agents can infer org/repo from user context (GitHub URLs, repository mentions, etc.)
+- `DEFAULT_JOB_NAME`: Default Prow job name (e.g., `pull-ci-redhat-developer-rhdh-main-e2e-tests`). Used as default when not specified in tool calls. Agents can infer job names from user questions (test type mentions, Prow URLs, etc.)
+- `API_KEY`: For authenticated requests to access QE private Prow jobs
 - `MCP_TRANSPORT`: Transport method (`stdio` (default), `sse`, `http`)
 - `MCP_HOST`: Host for sse/http transport (default: `127.0.0.1`)
 - `MCP_PORT`: Port for sse/http transport (default: `8000`)
 
+> **Note**: `DEFAULT_ORG_REPO` and `DEFAULT_JOB_NAME` are now **optional**. Tools can accept these parameters per-request, and AI agents can intelligently infer them from user context such as GitHub URLs, repository mentions, or test type keywords.
+
 ### Example `mcp.json` Configuration
 
+#### Minimal Configuration (No Defaults)
+```json
+{
+  "mcpServers": {
+    "prow-stdio": {
+      "command": "uv",
+      "args": ["run", "python", "/path/to/prow-mcp-server/main.py"],
+      "description": "MCP server for Prow CI/CD integration"
+    }
+  }
+}
+```
+
+#### With Default Repository (Recommended for Single Project)
 ```json
 {
   "mcpServers": {
