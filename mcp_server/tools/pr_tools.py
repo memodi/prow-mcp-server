@@ -1,6 +1,5 @@
 """Tools for PR-related operations in the MCP Prow server."""
 
-import asyncio
 import json
 from typing import List, Dict, Any, Optional
 
@@ -78,7 +77,7 @@ def register_pr_tools(mcp: FastMCP) -> None:
             return json.dumps(error_result, indent=2)
 
     @mcp.tool()
-    def get_latest_prow_build_for_pr(
+    async def get_latest_prow_build_for_pr(
         pr_number: str,
         org_repo: Optional[str] = None,
         job_name: Optional[str] = None
@@ -120,10 +119,10 @@ def register_pr_tools(mcp: FastMCP) -> None:
                     "success": False,
                     "error": "job_name is required. Either provide it as a parameter or set DEFAULT_JOB_NAME environment variable."
                 })
-            
+
         try:
-            # Run the async function using asyncio
-            result = asyncio.run(smart_pr_build_finder(pr_number, org_repo, job_name))
+            # Use await instead of asyncio.run() since we're already in an async context
+            result = await smart_pr_build_finder(pr_number, org_repo, job_name)
             return json.dumps(result, indent=2)
         except Exception as e:
             error_result = {

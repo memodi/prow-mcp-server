@@ -86,7 +86,7 @@ class GCSService:
 
         html_content = await make_request_text(pr_logs_url, timeout=DEFAULT_TIMEOUT)
         if html_content:
-            build_pattern = r'<a href="(\d+)/"'
+            build_pattern = r'href=".+pull-.+/(\d+)/">'
             builds = re.findall(build_pattern, html_content)
             return sorted(builds, key=int, reverse=True)
 
